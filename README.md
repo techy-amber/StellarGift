@@ -1,10 +1,14 @@
-# 🎁 StellarGift — Level 1: White Belt
+# 🎁 StellarGift — Level 2: Yellow Belt
 
 StellarGift is a web application that allows users to send XLM as a shareable, one-time crypto gift link on the Stellar Testnet. Recipients do not need a pre-existing account to receive the gift—they can open the link and sweep the XLM balance directly to any Stellar public key.
 
-> ⚪ **Level 1 Submission:** For a detailed breakdown of Level 1 (White Belt) requirements, verification states, and screenshots of live execution on the testnet, please refer to the [Level 1 - White Belt Submission Document](LEVEL_1_WHITE_BELT.md).
+In **Level 2 (Yellow Belt)**, the application utilizes a compiled Rust smart contract escrow on Soroban, along with the multi-wallet StellarWalletsKit interface.
 
-This repository contains the **Level 1 (White Belt)** implementation.
+> 🟡 **Level 2 Submission:** For a detailed breakdown of Level 2 (Yellow Belt) smart contract code, deployment hashes, and screenshots of live execution on the testnet, please refer to the [Level 2 - Yellow Belt Submission Document](LEVEL_2_YELLOW_BELT.md).
+> 
+> ⚪ **Level 1 Submission:** For the earlier peer-to-peer Horizon implementation details, please refer to the [Level 1 - White Belt Submission Document](LEVEL_1_WHITE_BELT.md).
+
+This repository contains the **Level 2 (Yellow Belt)** implementation.
 
 ---
 
@@ -25,6 +29,10 @@ The sweep transaction completes successfully, showing destination address confir
 ### 4. Transactions Verification on Stellar Expert
 - **Funding Transaction (`createAccount`):** [View Explorer Proof](./public/screenshots/create-gift%20explorer.png)
 - **Claim Transaction (`payment` sweep):** [View Explorer Proof](./public/screenshots/claimgift%20explorer.png)
+
+### 5. Multi-Wallet Options Available (Level 2)
+The wallet connection interface is powered by `@creit.tech/stellar-wallets-kit`, enabling Freighter, xBull, Albedo, and Lobstr connections:
+![Wallet Options Picker](./public/screenshots/MULTI-WALLET.png)
 
 ---
 

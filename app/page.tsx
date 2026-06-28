@@ -7,19 +7,22 @@ import GiftResult from '@/components/GiftResult';
 
 export default function Home() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [walletId, setWalletId] = useState<string | null>(null);
   const [activePage, setActivePage] = useState<'landing' | 'dashboard'>('landing');
 
   // Success result from CreateGift
   const [giftResult, setGiftResult] = useState<{ giftLink: string; txHash: string } | null>(null);
 
   // Stable callbacks using useCallback to prevent react reconciler size warning
-  const handleConnect = useCallback((address: string) => {
+  const handleConnect = useCallback((address: string, id: string) => {
     setWalletAddress(address);
+    setWalletId(id);
     setActivePage('dashboard');
   }, []);
 
   const handleDisconnect = useCallback(() => {
     setWalletAddress(null);
+    setWalletId(null);
     setGiftResult(null);
     setActivePage('landing');
   }, []);
@@ -27,7 +30,7 @@ export default function Home() {
   // Switch to page helper
   const navigateToDashboard = () => {
     if (!walletAddress) {
-      handleConnect('GABC3KX7QMNA9DHZY3KX7QMNA9DHZY3KX7QMN7XYZ');
+      handleConnect('GABC3KX7QMNA9DHZY3KX7QMNA9DHZY3KX7QMN7XYZ', 'freighter');
     } else {
       setActivePage('dashboard');
     }
@@ -45,6 +48,7 @@ export default function Home() {
             <div className="nav-right">
               <WalletConnect
                 address={walletAddress}
+                walletId={walletId}
                 onConnect={handleConnect}
                 onDisconnect={handleDisconnect}
               />
@@ -112,28 +116,28 @@ export default function Home() {
                 <div className="step-num font-serif text-4xl font-bold text-[#E8D5A3] mb-4">01</div>
                 <div className="step-title font-semibold text-[#1C1A16] mb-2">Connect your wallet</div>
                 <div className="step-desc text-sm text-[#6B6558] leading-relaxed">
-                  Use Freighter to connect safely. We fetch your balance automatically to fund the gift cards.
+                  Use your preferred wallet via StellarWalletsKit. We support Freighter, xBull, Albedo, and Lobstr.
                 </div>
               </div>
               <div className="step-card bg-[#FDFCF9] border border-[rgba(28,26,22,0.1)] rounded-lg p-8 hover:-translate-y-1 hover:shadow-md hover:border-[#C9A96E]/40 transition-all">
                 <div className="step-num font-serif text-4xl font-bold text-[#E8D5A3] mb-4">02</div>
                 <div className="step-title font-semibold text-[#1C1A16] mb-2">Set amount & message</div>
                 <div className="step-desc text-sm text-[#6B6558] leading-relaxed">
-                  Enter the amount of XLM to gift and add an optional message. The app creates a unique gift address.
+                  Enter the amount of XLM to gift and add an optional message. The app locks the funds in the smart contract escrow.
                 </div>
               </div>
               <div className="step-card bg-[#FDFCF9] border border-[rgba(28,26,22,0.1)] rounded-lg p-8 hover:-translate-y-1 hover:shadow-md hover:border-[#C9A96E]/40 transition-all">
                 <div className="step-num font-serif text-4xl font-bold text-[#E8D5A3] mb-4">03</div>
                 <div className="step-title font-semibold text-[#1C1A16] mb-2">Share the link</div>
                 <div className="step-desc text-sm text-[#6B6558] leading-relaxed">
-                  Send the generated gift link to anyone. They open it and sweep the XLM directly to their address.
+                  Send the generated gift link to anyone. They open it and claim the XLM directly to their address on-chain.
                 </div>
               </div>
               <div className="step-card bg-[#FDFCF9] border border-[rgba(28,26,22,0.1)] rounded-lg p-8 hover:-translate-y-1 hover:shadow-md hover:border-[#C9A96E]/40 transition-all">
                 <div className="step-num font-serif text-4xl font-bold text-[#E8D5A3] mb-4">04</div>
                 <div className="step-title font-semibold text-[#1C1A16] mb-2">Gifts sweep safely</div>
                 <div className="step-desc text-sm text-[#6B6558] leading-relaxed">
-                  Funds are held in client-side generated addresses until recipient claims them.
+                  Funds are secured on-chain in the Soroban smart contract until the recipient claims them.
                 </div>
               </div>
             </div>
@@ -174,6 +178,7 @@ export default function Home() {
             <div className="dash-wallet">
               <WalletConnect
                 address={walletAddress}
+                walletId={walletId}
                 onConnect={handleConnect}
                 onDisconnect={handleDisconnect}
               />
@@ -184,7 +189,7 @@ export default function Home() {
             {/* Premium Dashboard Title */}
             <div className="mb-8">
               <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#1C1A16]">Create a Stellar Gift Card</h2>
-              <p className="text-sm text-[#6B6558] mt-1">Fund a secure, random keypair and generate a link to share with anyone.</p>
+              <p className="text-sm text-[#6B6558] mt-1">Lock funds securely in the smart contract escrow and generate a link to share with anyone.</p>
             </div>
 
             {/* Live Demo Area directly */}
@@ -196,9 +201,10 @@ export default function Home() {
               <div className="demo-body p-6 md:p-8">
                 {!walletAddress ? (
                   <div className="text-center py-10">
-                    <p className="text-sm text-[#6B6558] mb-4">Please connect your Freighter wallet to access the Live Demo.</p>
+                    <p className="text-sm text-[#6B6558] mb-4">Please connect your wallet via the picker modal to access the Live Demo.</p>
                     <WalletConnect
                       address={walletAddress}
+                      walletId={walletId}
                       onConnect={handleConnect}
                       onDisconnect={handleDisconnect}
                     />

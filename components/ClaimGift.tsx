@@ -1,17 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { isConnected, getAddress } from '@stellar/freighter-api';
-import { fetchBalance, claimGift } from '@/lib/stellar';
-import { Keypair } from '@stellar/stellar-sdk';
+import { openWalletModal, signTx } from '@/lib/wallet';
+import { fetchBalance, claimGiftOnChain, getGiftFromContract } from '@/lib/stellar';
 
 interface ClaimGiftProps {
-  secretKey: string;
+  secretKey: string; // Decoded giftId
 }
 
-export default function ClaimGift({ secretKey }: ClaimGiftProps) {
-  const [giftAddress, setGiftAddress] = useState<string>('');
-  const [giftBalance, setGiftBalance] = useState<string>('0');
+export default function ClaimGift({ secretKey: giftId }: ClaimGiftProps) {
+  const [giftDetails, setGiftDetails] = useState<{
+    sender: string;
+    token: string;
+    amount: string;
+    message: string;
+    claimed: boolean;
+    recipient: string | null;
+  } | null>(null);
+
   const [recipientAddress, setRecipientAddress] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [checking, setChecking] = useState<boolean>(true);
@@ -19,52 +25,37 @@ export default function ClaimGift({ secretKey }: ClaimGiftProps) {
   const [successHash, setSuccessHash] = useState<string | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
 
-  // Derive gift address from secret key and fetch balance on load
+  // Fetch gift details from the smart contract on load
   useEffect(() => {
     async function loadGiftDetails() {
       try {
         setError(null);
         setChecking(true);
         
-        // Derive address
-        const kp = Keypair.fromSecret(secretKey);
-        const pubKey = kp.publicKey();
-        setGiftAddress(pubKey);
-
-        // Fetch balance
-        const balance = await fetchBalance(pubKey);
-        setGiftBalance(balance);
+        const details = await getGiftFromContract(giftId);
+        if (details) {
+          setGiftDetails(details);
+        } else {
+          setError('Gift card not found. Please verify the URL.');
+        }
       } catch (e: any) {
         console.error('Failed to load gift:', e);
-        setError('Invalid gift secret key or problem loading gift account.');
+        setError('Error connecting to the Stellar network.');
       } finally {
         setChecking(false);
       }
     }
-    if (secretKey) {
+    if (giftId) {
       loadGiftDetails();
     }
-  }, [secretKey]);
+  }, [giftId]);
 
   async function connectRecipientWallet() {
     setWalletError(null);
     try {
-      const result = await isConnected();
-      if (!result.isConnected) {
-        setWalletError('Freighter wallet not found.');
-        return;
-      }
-      
-      const addrResult = await getAddress();
-      if (addrResult.error) {
-        throw new Error(addrResult.error);
-      }
-
-      if (addrResult.address) {
-        setRecipientAddress(addrResult.address);
-      } else {
-        setWalletError('Access denied.');
-      }
+      await openWalletModal((addr) => {
+        setRecipientAddress(addr);
+      });
     } catch (e: any) {
       setWalletError(e.message || 'Connection failed.');
     }
@@ -83,15 +74,24 @@ export default function ClaimGift({ secretKey }: ClaimGiftProps) {
         return;
       }
 
-      // Execute sweep
-      const hash = await claimGift(secretKey, recipientAddress);
+      // Execute on-chain contract claim call
+      const hash = await claimGiftOnChain(recipientAddress, giftId, async (xdr) => {
+        return await signTx(xdr);
+      });
+      
       setSuccessHash(hash);
       
-      // Update balance to 0 (or remaining reserve)
-      setGiftBalance('0');
+      // Update state
+      if (giftDetails) {
+        setGiftDetails({ ...giftDetails, claimed: true, recipient: recipientAddress });
+      }
     } catch (e: any) {
       console.error(e);
-      setError(e.message || 'Something went wrong. Check the recipient address.');
+      if (e.message?.includes('User declined') || e.message?.includes('cancelled') || e.message?.includes('declined')) {
+        setError('Transaction was cancelled. Please try again.');
+      } else {
+        setError(e.message || 'Something went wrong during claim processing.');
+      }
     } finally {
       setLoading(false);
     }
@@ -101,12 +101,10 @@ export default function ClaimGift({ secretKey }: ClaimGiftProps) {
     return (
       <div className="text-center py-12">
         <div className="inline-block w-8 h-8 border-4 border-[#C9A96E] border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-[#6B6558] font-medium text-sm">Verifying gift link and checking balance...</p>
+        <p className="text-[#6B6558] font-medium text-sm">Querying smart contract ledger...</p>
       </div>
     );
   }
-
-  const giftVal = parseFloat(giftBalance);
 
   if (successHash) {
     return (
@@ -116,7 +114,7 @@ export default function ClaimGift({ secretKey }: ClaimGiftProps) {
         </div>
         <h3 className="font-serif text-2xl font-bold text-[#1C1A16]">Gift Claimed Successfully!</h3>
         <p className="text-sm text-[#6B6558] mt-2 mb-6">
-          The funds have been swept to the recipient address.
+          The funds have been transferred from the smart contract escrow directly to your address.
         </p>
 
         <div className="border-t border-[rgba(28,26,22,0.1)] pt-5 text-left mb-6">
@@ -137,43 +135,65 @@ export default function ClaimGift({ secretKey }: ClaimGiftProps) {
     );
   }
 
-  if (giftVal <= 1.01) {
+  if (error || !giftDetails) {
     return (
       <div className="bg-[#FDFCF9] border border-[rgba(28,26,22,0.1)] rounded-[20px] p-8 max-w-md mx-auto shadow-md text-center">
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#FAEDEB] text-[#9B3B2E] text-2xl mb-4">
           ✕
         </div>
-        <h3 className="font-serif text-xl font-bold text-[#1C1A16]">Gift Already Claimed or Empty</h3>
+        <h3 className="font-serif text-xl font-bold text-[#1C1A16]">{error ? 'Error' : 'Gift Not Found'}</h3>
         <p className="text-sm text-[#6B6558] mt-2 mb-4 leading-relaxed">
-          This gift link has already been swept, or contains less than the minimum balance required to sweep (1.01 XLM).
+          {error || 'This gift card does not exist or has been deleted.'}
         </p>
         <div className="text-xs font-mono text-[#9B968C] bg-[#F2EDE4] py-2 px-3 rounded break-all">
-          Account: {giftAddress}
+          ID: {giftId}
+        </div>
+      </div>
+    );
+  }
+
+  if (giftDetails.claimed) {
+    return (
+      <div className="bg-[#FDFCF9] border border-[rgba(28,26,22,0.1)] rounded-[20px] p-8 max-w-md mx-auto shadow-md text-center">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#FAEDEB] text-[#9B3B2E] text-2xl mb-4">
+          ✕
+        </div>
+        <h3 className="font-serif text-xl font-bold text-[#1C1A16]">Gift Already Claimed</h3>
+        <p className="text-sm text-[#6B6558] mt-2 mb-4 leading-relaxed">
+          This gift has already been claimed and swept to the recipient address.
+        </p>
+        <div className="text-xs font-mono text-[#9B968C] bg-[#F2EDE4] py-2 px-3 rounded break-all">
+          Claimed by: {giftDetails.recipient}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#FDFCF9] border border-[rgba(28,26,22,0.1)] rounded-[20px] p-6 md:p-8 max-w-xl mx-auto shadow-md">
+    <div className="bg-[#FDFCF9] border border-[rgba(28,26,22,0.1)] rounded-[20px] p-6 md:p-8 max-w-xl mx-auto shadow-md w-full">
       <div className="text-center mb-6">
         <div className="font-serif text-sm tracking-wider uppercase text-[#9E7A3F] font-semibold mb-1">You received a gift</div>
-        <div className="gift-card-amount font-serif text-5xl font-bold text-[#1C1A16] mb-1 leading-none">{(giftVal - 1.01).toFixed(4)}</div>
-        <div className="text-sm text-[#6B6558]">XLM on Stellar Testnet (after reserve & fee deduction)</div>
+        <div className="gift-card-amount font-serif text-5xl font-bold text-[#1C1A16] mb-1 leading-none">{parseFloat(giftDetails.amount).toFixed(2)}</div>
+        <div className="text-sm text-[#6B6558]">XLM on Stellar Testnet</div>
+        {giftDetails.message && (
+          <p className="text-sm italic font-serif text-[#3D3A32] bg-[#F2EDE4] rounded-lg px-4 py-3 mt-4 text-center">
+            "{giftDetails.message}"
+          </p>
+        )}
       </div>
 
       <div className="bg-[#F2EDE4] border border-[rgba(28,26,22,0.1)] rounded-[12px] p-4.5 mb-6 text-sm">
         <div className="flex justify-between py-1 border-b border-[rgba(28,26,22,0.06)]">
-          <span className="text-[#6B6558]">Total Raw Gift Balance</span>
-          <span className="font-semibold text-[#1C1A16]">{giftVal.toFixed(4)} XLM</span>
+          <span className="text-[#6B6558]">Sender</span>
+          <span className="font-mono text-xs text-[#1C1A16]">{giftDetails.sender.slice(0, 10)}...{giftDetails.sender.slice(-8)}</span>
         </div>
         <div className="flex justify-between py-1 border-b border-[rgba(28,26,22,0.06)]">
-          <span className="text-[#6B6558]">Stellar Ledger Minimum Reserve</span>
-          <span className="font-semibold text-[#9B3B2E]">-1.00 XLM</span>
+          <span className="text-[#6B6558]">On-chain Escrow ID</span>
+          <span className="font-mono text-xs text-[#1C1A16]">{giftId}</span>
         </div>
         <div className="flex justify-between py-1">
-          <span className="text-[#6B6558]">Transaction Network Fee Margin</span>
-          <span className="font-semibold text-[#9B3B2E]">-0.01 XLM</span>
+          <span className="text-[#6B6558]">Asset</span>
+          <span className="font-semibold text-[#4A7C59]">Native XLM (Stellar Asset Contract)</span>
         </div>
       </div>
 
@@ -186,7 +206,7 @@ export default function ClaimGift({ secretKey }: ClaimGiftProps) {
               onClick={connectRecipientWallet}
               className="text-xs text-[#9E7A3F] font-semibold hover:underline bg-transparent border-none cursor-pointer"
             >
-              Auto-fill from Freighter
+              Select Wallet
             </button>
           </div>
           
@@ -207,7 +227,7 @@ export default function ClaimGift({ secretKey }: ClaimGiftProps) {
           disabled={loading || !recipientAddress}
           className="btn-action w-full py-3.5 bg-[#1C1A16] text-[#F8F4EE] hover:bg-[#3D3A32] disabled:opacity-50 disabled:cursor-not-allowed border-none rounded-lg text-[15px] font-semibold cursor-pointer transition-all"
         >
-          {loading ? 'Sweeping Funds...' : 'Claim Gift'}
+          {loading ? 'Claiming Funds on Ledger...' : 'Claim Gift'}
         </button>
       </form>
 
