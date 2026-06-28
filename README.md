@@ -2,9 +2,31 @@
 
 StellarGift is a web application that allows users to send XLM as a shareable, one-time crypto gift link on the Stellar Testnet. Recipients do not need a pre-existing account to receive the gift—they can open the link and sweep the XLM balance directly to any Stellar public key.
 
-> ⚪ **Level 1 Submission:** For a detailed breakdown of Level 1 (White Belt) requirements, verification states, and screenshots of live execution on the testnet, please refer to the [Level 1 Submission README](LEVEL1_README.md).
+> ⚪ **Level 1 Submission:** For a detailed breakdown of Level 1 (White Belt) requirements, verification states, and screenshots of live execution on the testnet, please refer to the [Level 1 - White Belt Submission Document](LEVEL_1_WHITE_BELT.md).
 
 This repository contains the **Level 1 (White Belt)** implementation.
+
+---
+
+## 📸 Demo Screenshots
+
+### 1. Sender Dashboard & Form
+Configure gift amounts and add a personal message with a dynamic card preview:
+![Sender Dashboard](./public/screenshots/gift%20form.png)
+
+### 2. Recipient Claim Page
+Decrypts the URL secret key client-side, displays the gift details, and sweeps the balance:
+![Recipient Claim Page](./public/screenshots/recieved%20gift.png)
+
+### 3. Claim Success Confirmation
+The sweep transaction completes successfully, showing destination address confirmation:
+![Claim Success](./public/screenshots/gift%20claied%20succesfully.png)
+
+### 4. Transactions Verification on Stellar Expert
+- **Funding Transaction (`createAccount`):** [View Explorer Proof](./public/screenshots/create-gift%20explorer.png)
+- **Claim Transaction (`payment` sweep):** [View Explorer Proof](./public/screenshots/claimgift%20explorer.png)
+
+---
 
 ## 🚀 Features
 
