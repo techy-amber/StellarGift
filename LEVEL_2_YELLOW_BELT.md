@@ -21,7 +21,7 @@ We integrated `@creit.tech/stellar-wallets-kit` to support:
 *   Lobstr Wallet
 
 #### Screenshot: Wallet Options Available
-![Stellar Wallets Kit Modal](./public/screenshots/wallet_picker.png)
+![Stellar Wallets Kit Modal](./public/screenshots/MULTI-WALLET.png)
 
 ---
 
