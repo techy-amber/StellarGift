@@ -1,4 +1,4 @@
-# ⚪ Level 1 — White Belt Submission
+# ⚪ Level 1 — White Belt
 
 **StellarGift** is a web-based, non-custodial crypto gift card application built on the Stellar Testnet. 
 
