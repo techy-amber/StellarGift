@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { isConnected, signTransaction } from '@stellar/freighter-api';
-import { generateGiftKeypair, encodeForURL } from '@/lib/keypair';
-import { sendGift, fetchBalance } from '@/lib/stellar';
+import { signTx } from '@/lib/wallet';
+import { encodeForURL } from '@/lib/keypair';
+import { createGiftOnChain, fetchBalance } from '@/lib/stellar';
 
 interface CreateGiftProps {
   senderAddress: string;
@@ -42,61 +42,48 @@ export default function CreateGift({ senderAddress, onSuccess }: CreateGiftProps
 
     try {
       const parsedAmount = parseFloat(amount);
-      if (isNaN(parsedAmount) || parsedAmount < 1.01) {
-        setError('Minimum gift amount is 1.01 XLM (1 XLM reserve + fees).');
+      if (isNaN(parsedAmount) || parsedAmount < 0.1) {
+        setError('Minimum gift amount is 0.1 XLM.');
         setLoading(false);
         return;
       }
 
-      // 1. Check if wallet is connected / installed
-      const walletCheck = await isConnected();
-      if (!walletCheck || !walletCheck.isConnected) {
-        setError('Please install Freighter wallet extension first.');
-        setLoading(false);
-        return;
-      }
-
-      // 2. Fetch latest balance and verify sufficient funds
+      // Fetch latest balance and verify sufficient funds
       const latestBalance = await fetchBalance(senderAddress);
       setBalance(latestBalance);
       const balanceFloat = parseFloat(latestBalance);
 
-      // The sender needs enough balance to cover the startingBalance (amount) + transaction fee (0.00001 XLM)
-      // The plan specifies: balance < amount + 1.5
-      if (balanceFloat < parsedAmount + 1.5) {
-        setError(`Insufficient balance. You need at least ${(parsedAmount + 1.5).toFixed(2)} XLM (includes reserve and network fee margin).`);
+      // Verify the sender has enough funds to cover the gift + some fee margin
+      if (balanceFloat < parsedAmount + 0.5) {
+        setError(`Insufficient balance. You need at least ${(parsedAmount + 0.5).toFixed(2)} XLM (includes contract execution fee buffer).`);
         setLoading(false);
         return;
       }
 
-      setStatusMsg('⏳ Generating gift keypair...');
-      const giftKeypair = generateGiftKeypair();
+      setStatusMsg('⏳ Generating secure on-chain Gift ID...');
+      // Generate a unique alphanumeric ID
+      const giftId = 'G_' + Math.random().toString(36).substring(2, 10).toUpperCase();
 
-      setStatusMsg('⏳ Preparing transaction, please sign in Freighter...');
+      setStatusMsg('⏳ Preparing smart contract call. Please sign the transaction in your wallet...');
       
-      // Submit transaction via our Horizon sendGift utility
-      const txHash = await sendGift(
+      const txHash = await createGiftOnChain(
         senderAddress,
-        giftKeypair.publicKey,
+        giftId,
         amount,
+        message,
         async (xdr: string) => {
-          // Wrap freighter signing API
-          const { signedTxXdr, error: signError } = await signTransaction(xdr, {
-            networkPassphrase: 'Test SDF Network ; September 2015',
-          });
-          if (signError) {
-            throw new Error(signError);
-          }
-          return signedTxXdr;
+          return await signTx(xdr);
         }
       );
 
-      setStatusMsg('✅ Transaction confirmed!');
+      setStatusMsg('⏳ Awaiting transaction block confirmation...');
       
-      // Build the shareable link with base64 encoded secret key
-      const encodedSecret = encodeForURL(giftKeypair.secretKey);
-      const giftLink = `${window.location.origin}/claim/${encodedSecret}`;
+      // Build the shareable link with base64 encoded gift ID in the path
+      const encodedId = encodeForURL(giftId);
+      const giftLink = `${window.location.origin}/claim/${encodedId}`;
 
+      setStatusMsg('✅ Gift card created successfully on-chain!');
+      
       // Refresh balance
       handleRefreshBalance();
 
@@ -104,7 +91,6 @@ export default function CreateGift({ senderAddress, onSuccess }: CreateGiftProps
       onSuccess(giftLink, txHash);
     } catch (e: any) {
       console.error(e);
-      // 3. User rejected / cancelled or other error
       if (e.message?.includes('User declined') || e.message?.includes('cancelled') || e.message?.includes('declined')) {
         setError('Transaction was cancelled. Please try again.');
       } else {
@@ -144,12 +130,12 @@ export default function CreateGift({ senderAddress, onSuccess }: CreateGiftProps
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="e.g. 10"
-              min="1.01"
+              min="0.1"
               step="0.00001"
               required
               disabled={loading}
             />
-            <span className="text-xs text-[#6B6558] mt-1 block">Minimum 1.01 XLM (1 XLM account activation reserve + fees).</span>
+            <span className="text-xs text-[#6B6558] mt-1 block">Minimum 0.1 XLM. Funds will be held in the smart contract escrow.</span>
           </div>
 
           <div className="form-row">
@@ -206,7 +192,7 @@ export default function CreateGift({ senderAddress, onSuccess }: CreateGiftProps
             <div className="gift-card-footer mt-6 pt-4 border-t border-[rgba(28,26,22,0.1)] flex justify-between items-center">
               <div className="gift-card-status text-[12px] font-semibold text-[#4A7C59] flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-[#4A7C59] rounded-full animate-ping"></span>
-                <span>● Awaiting Claim</span>
+                <span>● Escrowed on Smart Contract</span>
               </div>
               <div className="gift-card-logo font-serif text-[13px] text-[#9B968C]">StellarGift</div>
             </div>
