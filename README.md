@@ -30,6 +30,10 @@ The sweep transaction completes successfully, showing destination address confir
 - **Funding Transaction (`createAccount`):** [View Explorer Proof](./public/screenshots/create-gift%20explorer.png)
 - **Claim Transaction (`payment` sweep):** [View Explorer Proof](./public/screenshots/claimgift%20explorer.png)
 
+### 5. Multi-Wallet Options Available (Level 2)
+The wallet connection interface is powered by `@creit.tech/stellar-wallets-kit`, enabling Freighter, xBull, Albedo, and Lobstr connections:
+![Wallet Options Picker](./public/screenshots/MULTI-WALLET.png)
+
 ---
 
 ## 🚀 Features
