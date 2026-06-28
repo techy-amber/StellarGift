@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎁 StellarGift — Level 1: White Belt
 
-## Getting Started
+StellarGift is a web application that allows users to send XLM as a shareable, one-time crypto gift link on the Stellar Testnet. Recipients do not need a pre-existing account to receive the gift—they can open the link and sweep the XLM balance directly to any Stellar public key.
 
-First, run the development server:
+> ⚪ **Level 1 Submission:** For a detailed breakdown of Level 1 (White Belt) requirements, verification states, and screenshots of live execution on the testnet, please refer to the [Level 1 Submission README](LEVEL1_README.md).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+This repository contains the **Level 1 (White Belt)** implementation.
+
+## 🚀 Features
+
+- **Freighter Wallet Integration:** Connect your wallet, view your address in a premium glassmorphic nav bar, and disconnect cleanly.
+- **Horizon Balance Lookup:** Automatically loads and refreshes your XLM balance from the Stellar Horizon Testnet.
+- **Client-Side Keypair Generation:** Generates a brand-new random Stellar keypair in the browser (never sent to any server) to hold the gifted XLM.
+- **Fund Gift via `createAccount`:** Uses the Freighter wallet to sign and submit a `createAccount` transaction to fund and activate the new gift address.
+- **Dynamic Gift Card Preview:** Form updating in real-time as you type the amount and optional message.
+- **Shareable Link Builder:** Generates a copyable gift link with the base64-encoded secret key in the URL path.
+- **Interactive Claim Sweep:** Claims page decodes the secret key from the path, displays the gift balance and message, and sweeps the balance (minus reserve and fee margin) to the recipient's public key.
+- **Robust Error Handling:** Handles missing wallets, cancelled transaction signatures, and low balances with user-friendly error messages.
+
+## 📦 Tech Stack
+
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS + Custom CSS Theme Variables
+- **Stellar SDK:** `@stellar/stellar-sdk`
+- **Wallet Connection:** `@stellar/freighter-api`
+- **Stellar Horizon:** https://horizon-testnet.stellar.org
+
+## 🛠️ Getting Started
+
+Follow these steps to run the project locally:
+
+1. **Clone and Navigate:**
+   ```bash
+   git clone https://github.com/yourname/stellar-gift
+   cd stellar-gift
+   ```
+
+2. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables:**
+   Create a `.env.local` file in the root of the project:
+   ```env
+   NEXT_PUBLIC_HORIZON_URL=https://horizon-testnet.stellar.org
+   NEXT_PUBLIC_NETWORK=TESTNET
+   ```
+
+4. **Run Local Server:**
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:3000` in your browser.
+
+## 📁 Folder Structure
+
+```
+stellar-gift/
+├── app/
+│   ├── layout.tsx              # Root layout with global styles and Google Fonts
+│   ├── page.tsx                # Home: Landing Page & Level 1 Dashboard
+│   └── claim/[secret]/
+│       └── page.tsx            # Gift claim page (uses URL secret key)
+├── components/
+│   ├── WalletConnect.tsx       # Connect / disconnect button with pill status
+│   ├── CreateGift.tsx          # Amount input + generate gift link
+│   ├── GiftResult.tsx          # Shows link + tx hash after sending
+│   └── ClaimGift.tsx           # Recipient claim sweep UI
+├── lib/
+│   ├── stellar.ts              # Horizon calls, send XLM, fetch balance, claim sweep
+│   └── keypair.ts              # Generate & encode/decode gift keypair
+├── public/
+├── .env.local                  # Environment variables
+├── README.md
+└── package.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ⚠️ Error Handling Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The app handles the following edge cases:
+1. **Wallet Not Found:** Prompts the user to install the Freighter browser extension if it is not detected.
+2. **User Cancelled Signing:** Gracefully handles when a user declines or cancels transaction signing in Freighter.
+3. **Insufficient Balance:** Alerts the user if their balance is lower than the input gift amount plus the account reserve margin (amount + 1.5 XLM).
