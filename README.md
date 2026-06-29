@@ -1,5 +1,7 @@
 # 🎁 StellarGift — Level 3: Orange Belt
 
+[![CI](https://github.com/techy-amber/StellarGift/actions/workflows/ci.yml/badge.svg)](https://github.com/techy-amber/StellarGift/actions/workflows/ci.yml)
+
 StellarGift is a production-ready end-to-end dApp on Stellar that allows users to send XLM as a shareable, one-time crypto gift link. In **Level 3 (Orange Belt)**, we transition the application from a simple demo to a fully-featured, production-ready product with advanced smart contract logic, zero-knowledge equivalent NFT claim receipts, rigorous testing, and fully automated CI/CD pipelines.
 
 > 🟠 **Level 3 Submission:** For the detailed technical specification of the Level 3 (Orange Belt) contract, deploy hashes, testing reports, and screenshots of live execution on the testnet, please refer to the [Level 3 - Orange Belt Submission Document](LEVEL_3_ORANGE_BELT.md).
