@@ -67,17 +67,17 @@ export default function WalletConnect({ address, walletId, onConnect, onDisconne
 
   if (address) {
     return (
-      <div className="flex items-center gap-3">
-        <div className="wallet-pill flex items-center gap-2 bg-[#EBF4EE] border border-[rgba(74,124,89,0.3)] rounded-[24px] px-3.5 py-1.5 text-[13px] font-medium text-[#4A7C59]">
-          <span className="w-2 h-2 rounded-full bg-[#4A7C59] animate-pulse"></span>
-          <span>{getWalletName(walletId)} Connected</span>
-          <span className="text-[12px] opacity-75 font-mono ml-1.5 border-l border-[rgba(74,124,89,0.2)] pl-2">
+      <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="wallet-pill flex items-center gap-1.5 sm:gap-2 bg-[#EBF4EE] border border-[rgba(74,124,89,0.3)] rounded-[24px] px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-[13px] font-medium text-[#4A7C59]">
+          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#4A7C59] animate-pulse"></span>
+          <span>{getWalletName(walletId)}<span className="hidden sm:inline"> Connected</span></span>
+          <span className="hidden sm:inline text-[12px] opacity-75 font-mono ml-1.5 border-l border-[rgba(74,124,89,0.2)] pl-2">
             {address.slice(0, 6)}...{address.slice(-4)}
           </span>
         </div>
         <button
           onClick={handleDisconnect}
-          className="btn-disconnect font-serif text-sm font-semibold text-[#9B3B2E] bg-transparent border-none cursor-pointer transition-all hover:text-[#c54e3f]"
+          className="btn-disconnect font-serif text-xs sm:text-sm font-semibold text-[#9B3B2E] bg-transparent border-none cursor-pointer transition-all hover:text-[#c54e3f]"
         >
           Disconnect
         </button>
