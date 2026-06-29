@@ -26,6 +26,14 @@ Exposes a role-gated mint function to represent non-transferable proof-of-claim 
 - **Access Control**: The `mint_receipt` function validates that the caller (`env.current_contract_address()`) matches the stored owner, preventing arbitrary external calls.
 - **Receipt Metadata**: Stores receipt details in persistent storage, queryable via `get_receipt(owner, gift_id)`.
 
+## 🔗 On-Chain Contract Deployments (Stellar Testnet)
+
+- **Escrow Smart Contract ID**: `CDZVEOIWXPBOBERWEMQXDOVQMDR4GH7RQPNUK7552PGLDULRWNLSJ3N6`
+  - **Stellar Explorer Link**: [CDZVEOIWXPBOBERWEMQXDOVQMDR4GH7RQPNUK7552PGLDULRWNLSJ3N6](https://stellar.expert/explorer/testnet/contract/CDZVEOIWXPBOBERWEMQXDOVQMDR4GH7RQPNUK7552PGLDULRWNLSJ3N6)
+- **NFT Receipt Smart Contract ID**: `CCWU5QSHSB4YEEQ2JGRXPX7PIV5MYQ7NGNUW3OKSUFQKB45D5S6AUKTM`
+  - **Stellar Explorer Link**: [CCWU5QSHSB4YEEQ2JGRXPX7PIV5MYQ7NGNUW3OKSUFQKB45D5S6AUKTM](https://stellar.expert/explorer/testnet/contract/CCWU5QSHSB4YEEQ2JGRXPX7PIV5MYQ7NGNUW3OKSUFQKB45D5S6AUKTM)
+  - **Initialization TX Hash**: [d2cd63b5a0276a354057eac8138b44059fa4abe52a705df3f1a40194de79c89c](https://stellar.expert/explorer/testnet/tx/d2cd63b5a0276a354057eac8138b44059fa4abe52a705df3f1a40194de79c89c)
+
 ---
 
 ## 🧪 Testing Suite Coverage & Verification
