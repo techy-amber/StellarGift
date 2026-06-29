@@ -1,10 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Networks,
   TransactionBuilder,
-  Asset,
   Horizon,
   BASE_FEE,
-  Keypair,
   rpc,
   Contract,
   Address,
@@ -116,7 +115,7 @@ export async function createGiftOnChain(
 
   // Poll for result
   let status: string = result.status;
-  let txHash = result.hash;
+  const txHash = result.hash;
   
   // Wait up to 30 seconds for transaction finalization
   for (let i = 0; i < 15; i++) {
@@ -177,7 +176,7 @@ export async function claimGiftOnChain(
   }
 
   let status: string = result.status;
-  let txHash = result.hash;
+  const txHash = result.hash;
 
   for (let i = 0; i < 15; i++) {
     if (status === 'SUCCESS') break;
@@ -236,7 +235,7 @@ export async function expireGiftOnChain(
   }
 
   let status: string = result.status;
-  let txHash = result.hash;
+  const txHash = result.hash;
 
   for (let i = 0; i < 15; i++) {
     if (status === 'SUCCESS') break;

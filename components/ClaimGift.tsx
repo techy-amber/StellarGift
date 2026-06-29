@@ -1,8 +1,9 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/purity */
 
 import { useState, useEffect } from 'react';
 import { openWalletModal, signTx } from '@/lib/wallet';
-import { fetchBalance, claimGiftOnChain, getGiftFromContract, expireGiftOnChain, getNFTReceiptFromContract } from '@/lib/stellar';
+import { claimGiftOnChain, getGiftFromContract, expireGiftOnChain, getNFTReceiptFromContract } from '@/lib/stellar';
 import ExpiryCountdown from './ExpiryCountdown';
 import GiftNFTReceipt from './GiftNFTReceipt';
 import MobileGiftCard from './MobileGiftCard';
@@ -143,7 +144,7 @@ export default function ClaimGift({ secretKey: giftId }: ClaimGiftProps) {
 
       setStatusMsg('⏳ Triggering contract expiry refund. Please sign in your wallet...');
       
-      const hash = await expireGiftOnChain(activeAddress, giftId, async (xdr) => {
+      await expireGiftOnChain(activeAddress, giftId, async (xdr) => {
         return await signTx(xdr);
       });
 

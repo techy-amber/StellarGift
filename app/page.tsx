@@ -87,7 +87,7 @@ export default function Home() {
                 <div className="gift-card-amount font-serif text-5xl font-bold text-[#1C1A16] mb-1 leading-none">25</div>
                 <div className="gift-card-unit text-sm text-[#9E7A3F] font-medium mb-5">XLM on Stellar Testnet</div>
                 <div className="gift-card-from text-[13px] text-[#6B6558] mb-1">From <strong>GABC...7XYZ</strong></div>
-                <div className="gift-card-msg text-sm text-[#3D3A32] italic font-serif mt-2">"Happy birthday! 🎉"</div>
+                <div className="gift-card-msg text-sm text-[#3D3A32] italic font-serif mt-2">&ldquo;Happy birthday! 🎉&rdquo;</div>
                 <div className="gift-card-footer mt-6 pt-4 border-t border-[rgba(28,26,22,0.1)] flex justify-between items-center">
                   <div className="gift-card-status text-[12px] font-semibold text-[#4A7C59] flex items-center gap-1">
                     ● Awaiting Claim
