@@ -254,7 +254,7 @@ export async function expireGiftOnChain(
  */
 export async function getGiftFromContract(giftId: string) {
   const contract = new Contract(CONTRACT_ID);
-  const dummySource = 'GBY67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7JTR7T';
+  const dummySource = 'GDOZVHEEK3AYSELLMW4F4FDIS7XKCONTJO3K2XJQHRE3XRTVSPWWSAJZ';
 
   try {
     const account = new Account(dummySource, '0');
@@ -300,7 +300,7 @@ export async function getNFTReceiptFromContract(ownerAddress: string, giftId: st
   if (!nftContractId) return null;
 
   const contract = new Contract(nftContractId);
-  const dummySource = 'GBY67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7JTR7T';
+  const dummySource = 'GDOZVHEEK3AYSELLMW4F4FDIS7XKCONTJO3K2XJQHRE3XRTVSPWWSAJZ';
 
   try {
     const account = new Account(dummySource, '0');
