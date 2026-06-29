@@ -19,7 +19,7 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
     if (!decodedSecret.startsWith('S') || decodedSecret.length !== 56) {
       decodeError = true;
     }
-  } catch (e) {
+  } catch {
     decodeError = true;
   }
 
