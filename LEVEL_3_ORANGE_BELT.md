@@ -109,3 +109,13 @@ stellar contract deploy \
 
 ### 3. Initialize Contracts:
 Run the contract initialization functions to link the escrow contract with the NFT contract and lock role ownership.
+
+---
+
+## 📸 Screenshots & Demos
+
+### Mobile Responsive UI
+![Mobile View](./public/screenshots/mobile-view.png)
+
+### Live Demo & Walkthrough Video
+*Link: [Walkthrough Video Placeholder]*
