@@ -60,6 +60,8 @@ export async function createGiftOnChain(
   giftId: string,
   amount: string,
   message: string,
+  expiresAt: number,
+  nftContract: string,
   signTransaction: (xdr: string) => Promise<string>
 ): Promise<string> {
   // Load source account details from RPC
@@ -76,7 +78,9 @@ export async function createGiftOnChain(
     new Address(senderAddress).toScVal(),
     new Address(NATIVE_TOKEN_ID).toScVal(),
     bigIntToI128ScVal(stroops),
-    xdr.ScVal.scvString(message)
+    xdr.ScVal.scvString(message),
+    xdr.ScVal.scvU64(new xdr.Uint64(BigInt(expiresAt))),
+    new Address(nftContract).toScVal()
   );
 
   let tx = new TransactionBuilder(account, {
@@ -188,6 +192,65 @@ export async function claimGiftOnChain(
 }
 
 /**
+ * Trigger explicit expiry refund of a gift card.
+ */
+export async function expireGiftOnChain(
+  senderAddress: string,
+  giftId: string,
+  signTransaction: (xdr: string) => Promise<string>
+): Promise<string> {
+  const account = await rpcServer.getAccount(senderAddress);
+  const contract = new Contract(CONTRACT_ID);
+
+  const callOp = contract.call(
+    'expire_gift',
+    xdr.ScVal.scvSymbol(giftId)
+  );
+
+  let tx = new TransactionBuilder(account, {
+    fee: BASE_FEE,
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(callOp)
+    .setTimeout(180)
+    .build();
+
+  const simulation = await rpcServer.simulateTransaction(tx);
+  if (rpc.Api.isSimulationError(simulation)) {
+    throw new Error(`Simulation failed: ${simulation.error}`);
+  }
+
+  tx = rpc.assembleTransaction(tx, simulation).build();
+
+  const signedXdr = await signTransaction(tx.toXDR());
+  if (!signedXdr) {
+    throw new Error('Transaction signing was cancelled.');
+  }
+
+  const result = await rpcServer.sendTransaction(
+    TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE)
+  );
+
+  if (result.status === 'ERROR') {
+    throw new Error(`Transaction submission failed: ${JSON.stringify(result.errorResult)}`);
+  }
+
+  let status: string = result.status;
+  let txHash = result.hash;
+
+  for (let i = 0; i < 15; i++) {
+    if (status === 'SUCCESS') break;
+    if (status === 'FAILED') throw new Error('Transaction execution failed.');
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    const poll = await rpcServer.getTransaction(txHash);
+    status = poll.status;
+  }
+
+  return txHash;
+}
+
+/**
  * Fetch gift card details from the contract.
  */
 export async function getGiftFromContract(giftId: string) {
@@ -217,13 +280,63 @@ export async function getGiftFromContract(giftId: string) {
         token: native.token,
         amount: (Number(native.amount) / 10000000).toString(),
         message: native.message,
-        claimed: native.claimed,
+        status: Number(native.status), // 0: Pending, 1: Claimed, 2: Expired
         recipient: native.recipient || null,
+        expiresAt: Number(native.expires_at),
+        nftContract: native.nft_contract,
       };
     }
     return null;
   } catch (e) {
     console.error('Error fetching gift from contract:', e);
+    return null;
+  }
+}
+
+/**
+ * Fetch NFT receipt details from the NFT contract.
+ */
+export async function getNFTReceiptFromContract(ownerAddress: string, giftId: string) {
+  const nftContractId = process.env.NEXT_PUBLIC_NFT_CONTRACT_ID;
+  if (!nftContractId) return null;
+
+  const contract = new Contract(nftContractId);
+  const dummySource = 'GBY67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7JTR7T';
+
+  try {
+    const account = new Account(dummySource, '0');
+    const tx = new TransactionBuilder(account, {
+      fee: '100',
+      networkPassphrase: NETWORK_PASSPHRASE,
+    })
+      .addOperation(
+        contract.call(
+          'get_receipt',
+          new Address(ownerAddress).toScVal(),
+          xdr.ScVal.scvSymbol(giftId)
+        )
+      )
+      .setTimeout(30)
+      .build();
+
+    const sim = await rpcServer.simulateTransaction(tx);
+    if (rpc.Api.isSimulationSuccess(sim) && sim.result) {
+      const scVal = sim.result.retval;
+      const native = scValToNative(scVal);
+      if (native === undefined || native === null) {
+        return null; // Receipt does not exist
+      }
+
+      return {
+        owner: native.owner,
+        giftId: native.gift_id,
+        amountXlm: (Number(native.amount_xlm) / 10000000).toString(),
+        claimedAt: Number(native.claimed_at),
+      };
+    }
+    return null;
+  } catch (e) {
+    console.error('Error fetching NFT receipt from contract:', e);
     return null;
   }
 }

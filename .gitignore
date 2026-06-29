@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Rust / Cargo target folders
+**/target/
+**/target-test/
+**/target-test-gnu/
+**/test_snapshots/
+
