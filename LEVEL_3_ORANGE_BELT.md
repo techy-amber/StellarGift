@@ -118,4 +118,6 @@ Run the contract initialization functions to link the escrow contract with the N
 ![Mobile View](./public/screenshots/mobile-view.png)
 
 ### Live Demo & Walkthrough Video
-*Link: [Walkthrough Video Placeholder]*
+[![StellarGift Demo](https://img.youtube.com/vi/TZcIF9elZb0/0.jpg)](https://youtu.be/TZcIF9elZb0)
+
+🎥 **Watch on YouTube:** https://youtu.be/TZcIF9elZb0

@@ -12,6 +12,14 @@ StellarGift is a production-ready end-to-end dApp on Stellar that allows users t
 
 ---
 
+## 🎥 Demo Video
+
+[![StellarGift Demo Video](https://img.youtube.com/vi/TZcIF9elZb0/0.jpg)](https://youtu.be/TZcIF9elZb0)
+
+▶️ **Watch the full walkthrough on YouTube:** https://youtu.be/TZcIF9elZb0
+
+---
+
 ## 🚀 Level 3 Advanced Features
 
 ### 1. Smart Contract Escrow with Expiry & Status Controls
