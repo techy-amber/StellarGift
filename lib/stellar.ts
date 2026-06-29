@@ -138,7 +138,11 @@ export async function claimGiftOnChain(
   giftId: string,
   signTransaction: (xdr: string) => Promise<string>
 ): Promise<string> {
-  const account = await rpcServer.getAccount(recipientAddress);
+  // Use Horizon to load the account — the Soroban RPC only knows accounts
+  // that have previously made a Soroban transaction, causing 'Account not found'
+  // errors for freshly funded classic accounts.
+  const horizonAccount = await server.loadAccount(recipientAddress);
+  const account = new Account(horizonAccount.accountId(), horizonAccount.sequence);
   const contract = new Contract(CONTRACT_ID);
 
   const callOp = contract.call(
@@ -198,7 +202,8 @@ export async function expireGiftOnChain(
   giftId: string,
   signTransaction: (xdr: string) => Promise<string>
 ): Promise<string> {
-  const account = await rpcServer.getAccount(senderAddress);
+  const horizonAccount = await server.loadAccount(senderAddress);
+  const account = new Account(horizonAccount.accountId(), horizonAccount.sequence);
   const contract = new Contract(CONTRACT_ID);
 
   const callOp = contract.call(
