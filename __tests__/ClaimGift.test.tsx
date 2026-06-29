@@ -36,7 +36,7 @@ describe('ClaimGift Component', () => {
   it('renders gift details when found', async () => {
     const mockGift = {
       sender: 'GBY67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7JTR7T67Q7J',
-      token: 'CDW47WZXS57EDREIG7U23437AELHPC6X4AEMRQXWCDW47WZXS57EDREIG',
+      token: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
       amount: '25',
       message: 'Hello World',
       claimed: false,
