@@ -43,7 +43,7 @@ describe('ClaimGift Component', () => {
       recipient: null,
       status: 0, // Pending
       expiresAt: Math.floor(Date.now() / 1000) + 86400, // +1 day
-      nftContract: 'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      nftContract: 'CCLS7LDBNGFGXRSBMXS6CTJF6LPIKKK3FUA6WE2UILL5WTVNH2DK5NST',
     };
 
     (stellarLib.getGiftFromContract as any).mockResolvedValue(mockGift);
