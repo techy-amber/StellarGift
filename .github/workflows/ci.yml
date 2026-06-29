@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev, level3]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: Frontend — lint, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm install --ignore-scripts
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+
+  contract:
+    name: Contract — build + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Run contract unit tests
+        run: cd contract && cargo test

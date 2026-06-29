@@ -15,11 +15,11 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
 
   try {
     decodedSecret = decodeFromURL(secret);
-    // Basic validation of Stellar secret key format (starts with S, length 56)
-    if (!decodedSecret.startsWith('S') || decodedSecret.length !== 56) {
+    // Basic validation of Gift ID format (starts with G_)
+    if (!decodedSecret.startsWith('G_') || decodedSecret.length < 5 || decodedSecret.length > 20) {
       decodeError = true;
     }
-  } catch (e) {
+  } catch {
     decodeError = true;
   }
 

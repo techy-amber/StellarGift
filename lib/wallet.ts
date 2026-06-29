@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { StellarWalletsKit, Networks } from '@creit.tech/stellar-wallets-kit';
 import { FreighterModule } from '@creit.tech/stellar-wallets-kit/modules/freighter';
 import { xBullModule } from '@creit.tech/stellar-wallets-kit/modules/xbull';
