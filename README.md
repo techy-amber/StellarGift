@@ -1,115 +1,116 @@
-# 🎁 StellarGift — Level 2: Yellow Belt
+# 🎁 StellarGift — Level 3: Orange Belt
 
-StellarGift is a web application that allows users to send XLM as a shareable, one-time crypto gift link on the Stellar Testnet. Recipients do not need a pre-existing account to receive the gift—they can open the link and sweep the XLM balance directly to any Stellar public key.
+StellarGift is a production-ready end-to-end dApp on Stellar that allows users to send XLM as a shareable, one-time crypto gift link. In **Level 3 (Orange Belt)**, we transition the application from a simple demo to a fully-featured, production-ready product with advanced smart contract logic, zero-knowledge equivalent NFT claim receipts, rigorous testing, and fully automated CI/CD pipelines.
 
-In **Level 2 (Yellow Belt)**, the application utilizes a compiled Rust smart contract escrow on Soroban, along with the multi-wallet StellarWalletsKit interface.
-
-> 🟡 **Level 2 Submission:** For a detailed breakdown of Level 2 (Yellow Belt) smart contract code, deployment hashes, and screenshots of live execution on the testnet, please refer to the [Level 2 - Yellow Belt Submission Document](LEVEL_2_YELLOW_BELT.md).
+> 🟠 **Level 3 Submission:** For the detailed technical specification of the Level 3 (Orange Belt) contract, deploy hashes, testing reports, and screenshots of live execution on the testnet, please refer to the [Level 3 - Orange Belt Submission Document](LEVEL_3_ORANGE_BELT.md).
 > 
-> ⚪ **Level 1 Submission:** For the earlier peer-to-peer Horizon implementation details, please refer to the [Level 1 - White Belt Submission Document](LEVEL_1_WHITE_BELT.md).
-
-This repository contains the **Level 2 (Yellow Belt)** implementation.
-
----
-
-## 📸 Demo Screenshots
-
-### 1. Sender Dashboard & Form
-Configure gift amounts and add a personal message with a dynamic card preview:
-![Sender Dashboard](./public/screenshots/gift%20form.png)
-
-### 2. Recipient Claim Page
-Decrypts the URL secret key client-side, displays the gift details, and sweeps the balance:
-![Recipient Claim Page](./public/screenshots/recieved%20gift.png)
-
-### 3. Claim Success Confirmation
-The sweep transaction completes successfully, showing destination address confirmation:
-![Claim Success](./public/screenshots/gift%20claied%20succesfully.png)
-
-### 4. Transactions Verification on Stellar Expert
-- **Funding Transaction (`createAccount`):** [View Explorer Proof](./public/screenshots/create-gift%20explorer.png)
-- **Claim Transaction (`payment` sweep):** [View Explorer Proof](./public/screenshots/claimgift%20explorer.png)
-
-### 5. Multi-Wallet Options Available (Level 2)
-The wallet connection interface is powered by `@creit.tech/stellar-wallets-kit`, enabling Freighter, xBull, Albedo, and Lobstr connections:
-![Wallet Options Picker](./public/screenshots/MULTI-WALLET.png)
+> 🟡 **Level 2 Submission:** For details on the original Soroban transition, please see [Level 2 - Yellow Belt Submission Document](LEVEL_2_YELLOW_BELT.md).
+> 
+> ⚪ **Level 1 Submission:** For the earlier peer-to-peer Horizon implementation details, please see [Level 1 - White Belt Submission Document](LEVEL_1_WHITE_BELT.md).
 
 ---
 
-## 🚀 Features
+## 🚀 Level 3 Advanced Features
 
-- **Freighter Wallet Integration:** Connect your wallet, view your address in a premium glassmorphic nav bar, and disconnect cleanly.
-- **Horizon Balance Lookup:** Automatically loads and refreshes your XLM balance from the Stellar Horizon Testnet.
-- **Client-Side Keypair Generation:** Generates a brand-new random Stellar keypair in the browser (never sent to any server) to hold the gifted XLM.
-- **Fund Gift via `createAccount`:** Uses the Freighter wallet to sign and submit a `createAccount` transaction to fund and activate the new gift address.
-- **Dynamic Gift Card Preview:** Form updating in real-time as you type the amount and optional message.
-- **Shareable Link Builder:** Generates a copyable gift link with the base64-encoded secret key in the URL path.
-- **Interactive Claim Sweep:** Claims page decodes the secret key from the path, displays the gift balance and message, and sweeps the balance (minus reserve and fee margin) to the recipient's public key.
-- **Robust Error Handling:** Handles missing wallets, cancelled transaction signatures, and low balances with user-friendly error messages.
+### 1. Smart Contract Escrow with Expiry & Status Controls
+The main Soroban smart contract escrow tracks each gift card's status through an explicit state machine:
+- **Pending**: XLM is locked in escrow, awaiting recipient claim.
+- **Claimed**: XLM successfully released; contract guarantees no double claims.
+- **Expired**: Gift lifetime exceeded. Only the original sender can trigger the refund.
 
-## 📦 Tech Stack
+### 2. Inter-Contract NFT Claim Receipts
+When a recipient claims their gift card, the main escrow contract executes an on-chain cross-contract invocation to a custom `GiftNFT` receipt contract. This contract mints a unique, non-transferable proof-of-claim NFT receipt directly to the recipient's address.
 
-- **Framework:** Next.js 14 (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS + Custom CSS Theme Variables
-- **Stellar SDK:** `@stellar/stellar-sdk`
-- **Wallet Connection:** `@stellar/freighter-api`
-- **Stellar Horizon:** https://horizon-testnet.stellar.org
+### 3. Expiry Countdowns & On-Chain Creator Refunds
+- **Recipient view**: A reactive, live-updating timer counts down days, hours, minutes, and seconds until the gift expires.
+- **Sender view**: If the gift card expires, the claim interface transforms to block recipient claims and provides a secure button for the sender to reclaim their escrowed funds back to their wallet.
 
-## 🛠️ Getting Started
+### 4. 100% Green Dual-Side Testing Suite
+- **Rust Contract Tests**: 5 robust tests verifying gift creation, successful claims, duplicate claim blocks, expiry time-checks, and sender refunds.
+- **Frontend Vitest Suite**: 8 unit tests in Node and JSDOM environments checking keypair encoding, form validations, loading states, and mock contract retrieval.
 
-Follow these steps to run the project locally:
+### 5. Automated CI/CD Pipelines
+- **Continuous Integration (`ci.yml`)**: On every push and pull-request, builds and runs unit tests for both the Rust contracts and the Next.js frontend.
+- **Continuous Deployment (`deploy.yml`)**: Auto-deploys verified main branches directly to production on Vercel.
 
-1. **Clone and Navigate:**
-   ```bash
-   git clone https://github.com/yourname/stellar-gift
-   cd stellar-gift
-   ```
+---
 
-2. **Install Dependencies:**
-   ```bash
-   npm install
-   ```
+## 🛠️ Tech Stack & Dependencies
 
-3. **Configure Environment Variables:**
-   Create a `.env.local` file in the root of the project:
-   ```env
-   NEXT_PUBLIC_HORIZON_URL=https://horizon-testnet.stellar.org
-   NEXT_PUBLIC_NETWORK=TESTNET
-   ```
+- **Frontend**: Next.js 14, Tailwind CSS, TypeScript
+- **Wallet Connection**: `@creit.tech/stellar-wallets-kit` (Freighter, xBull, Albedo, LOBSTR)
+- **Stellar Client**: `@stellar/stellar-sdk` (v16.0.0+)
+- **Testing Frameworks**: Vitest, React Testing Library, JSDOM
+- **Smart Contracts**: Soroban Smart Contract Rust SDK
+- **CI/CD**: GitHub Actions, Vercel
 
-4. **Run Local Server:**
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:3000` in your browser.
+---
 
-## 📁 Folder Structure
+## 📦 Getting Started
+
+### 1. Clone and Navigate:
+```bash
+git clone https://github.com/yourname/stellar-gift
+cd stellar-gift
+```
+
+### 2. Install Frontend Dependencies:
+```bash
+npm install --ignore-scripts
+```
+
+### 3. Build & Run Smart Contracts:
+Compile the main contract and the NFT contract, and run the Rust test suite:
+```bash
+cd contract
+cargo +stable-x86_64-pc-windows-gnu test --target-dir target-test-gnu -j 1
+```
+
+### 4. Run Frontend Unit Tests:
+```bash
+npm run test
+```
+
+### 5. Start Development Server:
+```bash
+npm run dev
+```
+Open `http://localhost:3000` in your browser.
+
+---
+
+## 📁 Level 3 Project Structure
 
 ```
 stellar-gift/
+├── .github/workflows/
+│   ├── ci.yml                  # Automated compilation & testing pipeline
+│   └── deploy.yml              # Automated Vercel production deployment pipeline
+├── __tests__/
+│   ├── keypair.test.ts         # Unit tests for client cryptography
+│   ├── CreateGift.test.tsx     # Form validations and bounds tests
+│   └── ClaimGift.test.tsx      # Multi-state claim page rendering tests
 ├── app/
-│   ├── layout.tsx              # Root layout with global styles and Google Fonts
-│   ├── page.tsx                # Home: Landing Page & Level 1 Dashboard
+│   ├── layout.tsx              # Global layout & styles
+│   ├── page.tsx                # Dashboard view
 │   └── claim/[secret]/
-│       └── page.tsx            # Gift claim page (uses URL secret key)
+│       └── page.tsx            # Recipient claiming & refunding route
 ├── components/
-│   ├── WalletConnect.tsx       # Connect / disconnect button with pill status
-│   ├── CreateGift.tsx          # Amount input + generate gift link
-│   ├── GiftResult.tsx          # Shows link + tx hash after sending
-│   └── ClaimGift.tsx           # Recipient claim sweep UI
+│   ├── CreateGift.tsx          # Gift card creation form (with datetime expiry picker)
+│   ├── ClaimGift.tsx           # Claim sweep + refund handler + receipt loader
+│   ├── ExpiryCountdown.tsx     # Live reactive countdown widget
+│   ├── GiftNFTReceipt.tsx      # Render container for proof NFT details
+│   └── MobileGiftCard.tsx      # Responsive visual preview card
+├── contract/                   # Main Gift Card Escrow Contract
+│   ├── src/lib.rs              # Escrow status, claims, and cross-contract NFT mint calls
+│   └── src/test.rs             # Escrow rust unit tests suite
+├── contract-nft/               # Receipt Minting NFT Contract
+│   └── src/lib.rs              # Role-gated receipt NFT minter
 ├── lib/
-│   ├── stellar.ts              # Horizon calls, send XLM, fetch balance, claim sweep
-│   └── keypair.ts              # Generate & encode/decode gift keypair
-├── public/
-├── .env.local                  # Environment variables
-├── README.md
+│   ├── stellar.ts              # RPC & Horizon communication helpers
+│   ├── keypair.ts              # Client key generation
+│   └── wallet.ts               # Wallet integration bindings
+├── vitest.config.ts            # Frontend test environment configuration
+├── vitest.setup.ts             # Web Crypto API global polyfills
 └── package.json
 ```
-
-## ⚠️ Error Handling Features
-
-The app handles the following edge cases:
-1. **Wallet Not Found:** Prompts the user to install the Freighter browser extension if it is not detected.
-2. **User Cancelled Signing:** Gracefully handles when a user declines or cancels transaction signing in Freighter.
-3. **Insufficient Balance:** Alerts the user if their balance is lower than the input gift amount plus the account reserve margin (amount + 1.5 XLM).
